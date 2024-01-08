@@ -1,0 +1,113 @@
+&FORCE_EVAL
+  METHOD QUICKSTEP
+  &DFT
+    &REAL_TIME_PROPAGATION
+       MAX_ITER 25
+       EPS_ITER 1.0E-9
+       MAT_EXP TAYLOR
+       INITIAL_WFN SCF_WFN
+       &PRINT
+         &CURRENT 
+         &END 
+       &END
+    &END
+    &EFIELD
+       INTENSITY 1.33E11
+       POLARISATION 0 0 1
+       ! 299.79 nanometer correspond to 1000 THz = 1 fs^-1
+       ! 50000 nanometer correspond to 6 THz
+       WAVELENGTH 50000.0
+       ENVELOP GAUSSIAN
+       &GAUSSIAN_ENV 
+          ! width in femtoseconds
+          SIGMA 100.0
+          T0    450.0
+       &END GAUSSIAN_ENV
+    &END
+    &PRINT
+      &MOMENTS
+        PERIODIC .FALSE.
+      &END
+      &EFIELD_CUBE
+      &END
+      &V_HARTREE_CUBE
+      &END
+      &E_DENSITY_CUBE
+      &END
+    &END
+    BASIS_SET_FILE_NAME  BASIS_MOLOPT_UZH
+    POTENTIAL_FILE_NAME  GTH_POTENTIALS
+    &MGRID
+      CUTOFF 100
+    &END MGRID
+    &QS
+      EPS_DEFAULT 1.0E-10
+    &END QS
+    &SCF
+      SCF_GUESS ATOMIC
+      EPS_SCF 1.0E-7
+      MAX_SCF 500
+      ADDED_MOS -1
+      CHOLESKY INVERSE
+      &SMEAR ON
+         METHOD FERMI_DIRAC
+         ELECTRONIC_TEMPERATURE [K] 300
+      &END SMEAR
+      &DIAGONALIZATION
+         ALGORITHM STANDARD
+      &END DIAGONALIZATION
+      &MIXING
+         METHOD BROYDEN_MIXING
+         ALPHA 0.1
+         BETA 1.5
+         NBROYDEN 8
+      &END
+    &END SCF
+    &POISSON
+      PERIODIC NONE
+      POISSON_SOLVER MT
+    &END POISSON
+    &XC
+      &XC_FUNCTIONAL PBE
+      &END XC_FUNCTIONAL
+    &END XC
+  &END DFT
+  &SUBSYS
+    &CELL
+      ABC 42 42 59
+      PERIODIC NONE
+    &END CELL
+    &TOPOLOGY
+      &CENTER_COORDINATES
+      &END CENTER_COORDINATES
+      COORD_FILE_NAME   struc.xyz
+      COORD_FILE_FORMAT XYZ
+    &END TOPOLOGY
+    &KIND Na
+      BASIS_SET ORB    DZVP-MOLOPT-PBE-GTH-q1
+      POTENTIAL        GTH-BP-q1
+    &END KIND
+  &END SUBSYS
+&END FORCE_EVAL
+&GLOBAL
+  PROJECT        Propagation_metal_cluster
+  RUN_TYPE       RT_PROPAGATION
+!  PRINT_LEVEL    DEBUG
+  EXTENDED_FFT_LENGTHS
+&END GLOBAL
+&MOTION
+    &MD
+      ENSEMBLE NVE
+      STEPS  5000
+      ! timestep in femtoseconds
+      TIMESTEP  0.2
+      TEMPERATURE 300.0
+    &END MD
+    &PRINT
+       &TRAJECTORY
+          &EACH
+             MD 1
+          &END
+       &END
+    &END
+&END MOTION
